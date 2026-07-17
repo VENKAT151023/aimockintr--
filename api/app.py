@@ -157,7 +157,7 @@ class User(db.Model):
     # Relationships
     notifications = db.relationship('Notification', backref='user', lazy=True)
     interview_answers = db.relationship('InterviewAnswer', backref='user', lazy=True)
-    feedbacks = db.relationship('Feedback', backref='user', lazy=True)
+    feedbacks = db.relationship('Feedback', foreign_keys='Feedback.user_id', backref='user', lazy=True)
     job_applications = db.relationship('JobApplication', backref='user', lazy=True)
     interview_sessions = db.relationship('InterviewSession', backref='user', lazy=True)
 
@@ -1777,15 +1777,24 @@ document.getElementById('editProfileForm').addEventListener('submit', async func
 def index():
     if 'user_id' in session:
         user = get_current_user()
-        if user and user.role == 'admin':
-            return redirect('/admin')
-        return redirect('/dashboard')
+        if user:
+            if user.role == 'admin':
+                return redirect('/admin')
+            return redirect('/dashboard')
+        # Session points to a user_id that no longer exists (e.g. DB was
+        # reset) - clear the stale session instead of looping forever.
+        session.clear()
     return render_template_string(LANDING_HTML)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if is_authenticated():
-        return redirect('/')
+        user = get_current_user()
+        if user:
+            return redirect('/')
+        # Stale session (user no longer exists in DB) - clear it and
+        # fall through to show the login form instead of redirect-looping.
+        session.clear()
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
