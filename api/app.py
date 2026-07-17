@@ -140,7 +140,6 @@ class User(db.Model):
     reset_token_expiry = db.Column(db.DateTime)
     login_attempts = db.Column(db.Integer, default=0)
     locked_until = db.Column(db.DateTime)
-    profile_picture = db.Column(db.String(200))
 
     # Interview fields
     meeting_scheduled = db.Column(db.Boolean, default=False)
