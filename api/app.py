@@ -201,11 +201,6 @@ class Notification(db.Model):
     link = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     read_at = db.Column(db.DateTime)
-    priority = db.Column(db.String(20), default='normal')
-    category = db.Column(db.String(30), default='system')
-    icon = db.Column(db.String(50))
-    expires_at = db.Column(db.DateTime)
-    is_dismissible = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
         return {
@@ -215,10 +210,7 @@ class Notification(db.Model):
             'type': self.type,
             'is_read': self.is_read,
             'link': self.link,
-            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
-            'priority': self.priority,
-            'category': self.category,
-            'icon': self.icon
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
 
 class ActivityLog(db.Model):
@@ -231,16 +223,6 @@ class ActivityLog(db.Model):
     ip_address = db.Column(db.String(45))
     user_agent = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    session_id = db.Column(db.String(100))
-    action_type = db.Column(db.String(50))
-    duration = db.Column(db.Integer, default=0)
-    success = db.Column(db.Boolean, default=True)
-    error_message = db.Column(db.Text)
-    resource_id = db.Column(db.Integer)
-    resource_type = db.Column(db.String(50))
-    page_url = db.Column(db.String(200))
-    http_method = db.Column(db.String(10))
-    status_code = db.Column(db.Integer)
 
 class InterviewAnswer(db.Model):
     __tablename__ = 'interview_answers'
@@ -253,16 +235,6 @@ class InterviewAnswer(db.Model):
     score = db.Column(db.Integer, default=0)
     feedback = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    word_count = db.Column(db.Integer, default=0)
-    sentiment_score = db.Column(db.Float, default=0.0)
-    confidence_score = db.Column(db.Float, default=0.0)
-    grammar_score = db.Column(db.Float, default=0.0)
-    relevance_score = db.Column(db.Float, default=0.0)
-    keywords_matched = db.Column(db.Text)
-    answer_duration = db.Column(db.Integer, default=0)
-    improvement_suggestions = db.Column(db.Text)
-    category = db.Column(db.String(50))
-    difficulty_level = db.Column(db.String(20), default='medium')
 
 class Feedback(db.Model):
     __tablename__ = 'feedback'
@@ -273,19 +245,6 @@ class Feedback(db.Model):
     comment = db.Column(db.Text)
     category = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    interview_id = db.Column(db.Integer)
-    experience_type = db.Column(db.String(30), default='interview')
-    helpfulness_score = db.Column(db.Integer, default=0)
-    ease_of_use = db.Column(db.Integer, default=0)
-    satisfaction_score = db.Column(db.Integer, default=0)
-    recommend_score = db.Column(db.Integer, default=0)
-    improvement_areas = db.Column(db.Text)
-    suggestions = db.Column(db.Text)
-    is_anonymous = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default='pending')
-    admin_response = db.Column(db.Text)
-    response_date = db.Column(db.DateTime)
-    response_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 class OTP(db.Model):
     __tablename__ = 'otps'
@@ -297,9 +256,6 @@ class OTP(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime)
     is_used = db.Column(db.Boolean, default=False)
-    attempt_count = db.Column(db.Integer, default=0)
-    last_attempt = db.Column(db.DateTime)
-    ip_address = db.Column(db.String(45))
 
 class JobApplication(db.Model):
     __tablename__ = 'job_applications'
@@ -315,19 +271,6 @@ class JobApplication(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    job_description = db.Column(db.Text)
-    application_letter = db.Column(db.Text)
-    resume_version = db.Column(db.String(50))
-    application_source = db.Column(db.String(50))
-    rejection_reason = db.Column(db.Text)
-    offer_details = db.Column(db.Text)
-    salary_offered = db.Column(db.Float, default=0.0)
-    joining_date = db.Column(db.DateTime)
-    job_category = db.Column(db.String(50))
-    job_type = db.Column(db.String(20), default='full-time')
-    work_location = db.Column(db.String(100))
-    skills_required = db.Column(db.Text)
-    experience_required = db.Column(db.Integer, default=0)
 
 class Company(db.Model):
     __tablename__ = 'companies'
@@ -344,19 +287,6 @@ class Company(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    founded_year = db.Column(db.Integer)
-    company_size = db.Column(db.String(20))
-    revenue = db.Column(db.String(50))
-    address = db.Column(db.Text)
-    city = db.Column(db.String(50))
-    state = db.Column(db.String(50))
-    country = db.Column(db.String(50))
-    contact_person = db.Column(db.String(100))
-    contact_email = db.Column(db.String(100))
-    company_type = db.Column(db.String(50))
-    specialties = db.Column(db.Text)
-    hiring_status = db.Column(db.String(20), default='active')
-    job_openings = db.Column(db.Integer, default=0)
 
 class InterviewSession(db.Model):
     __tablename__ = 'interview_sessions'
