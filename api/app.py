@@ -755,6 +755,7 @@ LOGIN_HTML = '''
             <button type="submit"><i class="fas fa-sign-in-alt"></i> Login</button>
         </form>
         <div class="links"><a href="/register"><i class="fas fa-user-plus"></i> New User? Register</a></div>
+        <div class="links" style="margin-top:8px;"><a href="/forgot-password"><i class="fas fa-key"></i> Forgot Password?</a></div>
         <div class="demo"><strong>Demo User:</strong> user@demo.com / 123</div>
         <div style="text-align:center;"><a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a></div>
         <div class="domain-tag"><a href="https://www.aimockintr.com">www.aimockintr.com</a></div>
@@ -963,7 +964,7 @@ DASHBOARD_HTML = '''
         {% if user.interview_complete %}
         <a href="/result" class="action-btn" style="border-color:rgba(72,187,120,0.4);"><div class="icon">📊</div><div class="label">View Result</div></a>
         {% endif %}
-        <a href="/admin" class="action-btn" style="border-color:rgba(102,126,234,0.3);"><div class="icon">⚙️</div><div class="label">Admin Panel</div></a>
+        <a href="/admin-login" class="action-btn" style="border-color:rgba(255,107,107,0.3);"><div class="icon">🛡️</div><div class="label">Admin Panel</div></a>
     </div>
     <div class="footer-text">www.aimockintr.com • LARA AI Mock Interview Platform</div>
 </div>
@@ -1701,6 +1702,151 @@ document.getElementById('editProfileForm').addEventListener('submit', async func
 </html>
 '''
 
+FORGOT_PASSWORD_HTML = '''
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LARA AI - Forgot Password</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#0a0a0f;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff;}
+        .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+        .container{position:relative;z-index:1;max-width:420px;width:100%;}
+        .card{background:rgba(255,255,255,0.02);backdrop-filter:blur(40px);border-radius:24px;padding:40px;border:1px solid rgba(255,255,255,0.04);}
+        .logo{text-align:center;font-size:24px;font-weight:900;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Orbitron',monospace;letter-spacing:2px;}
+        .sub{text-align:center;color:rgba(255,255,255,0.5);margin:10px 0 25px 0;font-size:13px;}
+        input{width:100%;padding:14px;margin:10px 0;border:1px solid rgba(255,255,255,0.04);border-radius:14px;font-size:14px;background:rgba(255,255,255,0.02);color:#fff;font-family:'Inter',sans-serif;}
+        input:focus{outline:none;border-color:#667eea;}
+        button{width:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:14px;border-radius:14px;font-size:15px;cursor:pointer;font-weight:600;font-family:'Orbitron',monospace;letter-spacing:1px;}
+        button:hover{transform:translateY(-2px);}
+        .result-box{background:rgba(72,187,120,0.08);border:1px solid rgba(72,187,120,0.2);border-radius:14px;padding:16px;margin-top:16px;font-size:13px;display:none;}
+        .result-box a{color:#48bb78;font-weight:600;word-break:break-all;}
+        .back-btn{display:block;text-align:center;margin-top:18px;color:rgba(255,255,255,0.6);text-decoration:none;font-size:12px;font-family:'Orbitron',monospace;}
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="container">
+    <div class="card">
+        <div class="logo"><i class="fas fa-key"></i> Forgot Password</div>
+        <div class="sub">Enter your email to get a reset link</div>
+        <form id="forgotForm">
+            <input type="email" name="email" placeholder="Your registered email" required>
+            <button type="submit">Send Reset Link</button>
+        </form>
+        <div class="result-box" id="resultBox"></div>
+        <a href="/login" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Login</a>
+    </div>
+</div>
+<script>
+document.getElementById('forgotForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const response = await fetch('/forgot-password', {method: 'POST', body: formData});
+    const data = await response.json();
+    const box = document.getElementById('resultBox');
+    box.style.display = 'block';
+    if(data.success){
+        box.innerHTML = data.message + '<br><br><a href="' + data.reset_link + '">Click here to reset your password</a>';
+    } else {
+        box.style.background = 'rgba(245,101,101,0.08)';
+        box.style.borderColor = 'rgba(245,101,101,0.2)';
+        box.innerHTML = data.message;
+    }
+});
+</script>
+</body>
+</html>
+'''
+
+RESET_PASSWORD_HTML = '''
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LARA AI - Reset Password</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#0a0a0f;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff;}
+        .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+        .container{position:relative;z-index:1;max-width:420px;width:100%;}
+        .card{background:rgba(255,255,255,0.02);backdrop-filter:blur(40px);border-radius:24px;padding:40px;border:1px solid rgba(255,255,255,0.04);}
+        .logo{text-align:center;font-size:24px;font-weight:900;background:linear-gradient(135deg,#48bb78,#38a169);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Orbitron',monospace;letter-spacing:2px;}
+        .sub{text-align:center;color:rgba(255,255,255,0.5);margin:10px 0 25px 0;font-size:13px;}
+        input{width:100%;padding:14px;margin:10px 0;border:1px solid rgba(255,255,255,0.04);border-radius:14px;font-size:14px;background:rgba(255,255,255,0.02);color:#fff;font-family:'Inter',sans-serif;}
+        input:focus{outline:none;border-color:#48bb78;}
+        button{width:100%;background:linear-gradient(135deg,#48bb78,#38a169);color:#fff;border:none;padding:14px;border-radius:14px;font-size:15px;cursor:pointer;font-weight:600;font-family:'Orbitron',monospace;letter-spacing:1px;}
+        .result-box{border-radius:14px;padding:16px;margin-top:16px;font-size:13px;display:none;}
+        .back-btn{display:block;text-align:center;margin-top:18px;color:rgba(255,255,255,0.6);text-decoration:none;font-size:12px;font-family:'Orbitron',monospace;}
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="container">
+    <div class="card">
+        <div class="logo"><i class="fas fa-lock"></i> Reset Password</div>
+        <div class="sub">Choose a new password for your account</div>
+        <form id="resetForm">
+            <input type="password" name="password" placeholder="New Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm New Password" required>
+            <button type="submit">Reset Password</button>
+        </form>
+        <div class="result-box" id="resultBox"></div>
+        <a href="/login" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Login</a>
+    </div>
+</div>
+<script>
+document.getElementById('resetForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const response = await fetch(window.location.pathname, {method: 'POST', body: formData});
+    const data = await response.json();
+    const box = document.getElementById('resultBox');
+    box.style.display = 'block';
+    if(data.success){
+        box.style.background = 'rgba(72,187,120,0.08)';
+        box.style.border = '1px solid rgba(72,187,120,0.2)';
+        box.innerHTML = data.message + ' <a href="/login" style="color:#48bb78;font-weight:600;">Go to Login</a>';
+        document.getElementById('resetForm').style.display = 'none';
+    } else {
+        box.style.background = 'rgba(245,101,101,0.08)';
+        box.style.border = '1px solid rgba(245,101,101,0.2)';
+        box.innerHTML = data.message;
+    }
+});
+</script>
+</body>
+</html>
+'''
+
+RESET_PASSWORD_INVALID_HTML = '''
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>LARA AI - Invalid Link</title>
+    <style>
+        body{font-family:sans-serif;background:#0a0a0f;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;}
+        a{color:#667eea;text-decoration:none;}
+    </style>
+</head>
+<body>
+    <div>
+        <h1>⚠️ Invalid or Expired Link</h1>
+        <p>This password reset link is invalid or has expired.</p>
+        <a href="/forgot-password">Request a new reset link</a>
+    </div>
+</body>
+</html>
+'''
+
 # ============================================================
 # ROUTES - COMPLETE APPLICATION
 # ============================================================
@@ -2193,52 +2339,41 @@ def forgot_password():
         email = sanitize_input(request.form.get('email'))
         user = User.query.filter_by(email=email).first()
         if not user:
-            return jsonify({'success': False, 'message': 'Email not found'})
+            return jsonify({'success': False, 'message': 'No account found with that email.'})
         token = generate_verification_token()
         user.reset_token = token
         user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Password reset link sent to your email'})
-    return render_template_string('''
-    <!DOCTYPE html>
-    <html><head><title>Forgot Password</title></head>
-    <body><h2>Forgot Password</h2>
-    <form id="forgotForm"><input type="email" name="email" placeholder="Email" required>
-    <button type="submit">Send Reset Link</button></form>
-    <script>
-    document.getElementById('forgotForm').addEventListener('submit', async function(e){
-        e.preventDefault();
-        const formData=new FormData(this);
-        const response=await fetch('/forgot-password',{method:'POST',body:formData});
-        const data=await response.json();
-        alert(data.message);
-    });
-    </script></body></html>
-    ''')
+        reset_link = f"/reset-password/{token}"
+        log_activity(user.id, 'forgot_password', 'Password reset requested')
+        return jsonify({
+            'success': True,
+            'message': 'Reset link generated! (No email server configured in this demo - use the link below.)',
+            'reset_link': reset_link
+        })
+    return render_template_string(FORGOT_PASSWORD_HTML)
+
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     user = User.query.filter_by(reset_token=token).first()
-    if not user or user.reset_token_expiry < datetime.utcnow():
-        return 'Invalid or expired token'
+    if not user or not user.reset_token_expiry or user.reset_token_expiry < datetime.utcnow():
+        return render_template_string(RESET_PASSWORD_INVALID_HTML)
     if request.method == 'POST':
         password = request.form.get('password')
         confirm = request.form.get('confirm_password')
+        if not password or len(password) < 3:
+            return jsonify({'success': False, 'message': 'Password must be at least 3 characters'})
         if password != confirm:
             return jsonify({'success': False, 'message': 'Passwords do not match'})
         user.set_password(password)
         user.reset_token = None
         user.reset_token_expiry = None
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Password reset successfully'})
-    return '''
-    <!DOCTYPE html>
-    <html><head><title>Reset Password</title></head>
-    <body><h2>Reset Password</h2>
-    <form method="POST"><input type="password" name="password" placeholder="New Password" required>
-    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-    <button type="submit">Reset Password</button></form></body></html>
-    '''
+        log_activity(user.id, 'reset_password', 'Password reset completed')
+        return jsonify({'success': True, 'message': 'Password reset successfully! You can now login.'})
+    return render_template_string(RESET_PASSWORD_HTML, token=token)
+
 
 @app.route('/verify-email/<token>')
 def verify_email(token):
