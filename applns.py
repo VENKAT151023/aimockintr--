@@ -2028,10 +2028,8 @@ def edit_profile():
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login_page():
-    if is_authenticated():
-        if is_admin():
-            return redirect('/admin')
-        return redirect('/')
+    if is_authenticated() and is_admin():
+        return redirect('/admin')
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
