@@ -832,7 +832,7 @@ REGISTER_HTML = '''
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-            <select name="user_type" required>
+            <select name="user_type" id="userTypeSelect" required onchange="toggleCgpaField()">
                 <option value="">Select User Type</option>
                 <option value="student">🎓 Student</option>
                 <option value="professional">💼 Professional</option>
@@ -852,7 +852,7 @@ REGISTER_HTML = '''
                     <option value="4">4 years</option>
                     <option value="5">5+ years</option>
                 </select>
-                <input type="number" name="cgpa" step="0.01" placeholder="CGPA (0-10)">
+                <input type="number" name="cgpa" id="cgpaField" step="0.01" placeholder="CGPA (0-10)" style="display:none;">
             </div>
             <input type="tel" name="phone" placeholder="Phone Number">
             <textarea name="bio" placeholder="Short Bio (Optional)"></textarea>
@@ -866,6 +866,17 @@ REGISTER_HTML = '''
     </div>
 </div>
 <script>
+function toggleCgpaField() {
+    const type = document.getElementById('userTypeSelect').value;
+    const cgpa = document.getElementById('cgpaField');
+    if (type === 'student') {
+        cgpa.style.display = 'block';
+    } else {
+        cgpa.style.display = 'none';
+        cgpa.value = '';
+    }
+}
+
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('registerBtn');
@@ -1022,9 +1033,9 @@ ADMIN_HTML = '''
     <div class="admin-header">
         <div class="admin-logo">🎯 LARA <span>Admin</span> <span class="domain">www.aimockintr.com</span></div>
         <div class="admin-nav">
-            <a href="/admin" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
-            <a href="/admin/users"><i class="fas fa-users"></i> Users</a>
-            <a href="/admin/schedule"><i class="fas fa-calendar-plus"></i> Schedule</a>
+            <a href="/admin" class="{% if active_tab == 'dashboard' %}active{% endif %}"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="/admin/users" class="{% if active_tab == 'users' %}active{% endif %}"><i class="fas fa-users"></i> Users</a>
+            <a href="/admin/schedule" class="{% if active_tab == 'schedule' %}active{% endif %}"><i class="fas fa-calendar-plus"></i> Schedule</a>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
@@ -1036,7 +1047,7 @@ ADMIN_HTML = '''
         <div class="stat-card"><div class="num" style="color:#48bb78;">{{ stats.pass_rate }}%</div><div class="label">📈 Pass Rate</div></div>
     </div>
     <div class="table-card">
-        <div class="table-title"><i class="fas fa-users"></i> All Users</div>
+        <div class="table-title"><i class="fas fa-users"></i> {{ table_title }}</div>
         <table>
             <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Type</th><th>Domain</th><th>Status</th><th>Score</th><th>Action</th></tr></thead>
             <tbody>
@@ -2046,10 +2057,7 @@ def admin_login_page():
         return jsonify({'success': False, 'message': 'Invalid admin credentials'})
     return render_template_string(ADMIN_LOGIN_HTML)
 
-@app.route('/admin')
-def admin():
-    if not is_authenticated() or not is_admin():
-        return redirect('/')
+def _admin_stats_and_all_users():
     users = User.query.order_by(User.created_at.desc()).all()
     non_admin_users = [u for u in users if u.role != 'admin']
     completed = [u for u in non_admin_users if u.interview_complete]
@@ -2060,19 +2068,33 @@ def admin():
         'avg_score': get_avg_score(non_admin_users),
         'pass_rate': get_pass_rate(non_admin_users),
     }
-    return render_template_string(ADMIN_HTML, users=users, stats=stats)
+    return users, stats
+
+
+@app.route('/admin')
+def admin():
+    if not is_authenticated() or not is_admin():
+        return redirect('/')
+    users, stats = _admin_stats_and_all_users()
+    return render_template_string(ADMIN_HTML, users=users, stats=stats,
+                                   active_tab='dashboard', table_title='All Users')
 
 @app.route('/admin/users')
 def admin_users():
     if not is_authenticated() or not is_admin():
         return redirect('/')
-    return admin()
+    users, stats = _admin_stats_and_all_users()
+    return render_template_string(ADMIN_HTML, users=users, stats=stats,
+                                   active_tab='users', table_title='All Users')
 
 @app.route('/admin/schedule')
 def admin_schedule():
     if not is_authenticated() or not is_admin():
         return redirect('/')
-    return admin()
+    all_users, stats = _admin_stats_and_all_users()
+    pending_users = [u for u in all_users if u.role != 'admin' and not u.interview_complete]
+    return render_template_string(ADMIN_HTML, users=pending_users, stats=stats,
+                                   active_tab='schedule', table_title='Users Awaiting Interview Scheduling')
 
 @app.route('/admin/schedule/<int:user_id>')
 def admin_schedule_user(user_id):
